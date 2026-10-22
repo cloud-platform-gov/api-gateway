@@ -1,0 +1,23 @@
+# Local development: runs only the gateway. Downstream services and
+# infrastructure (PostgreSQL, RabbitMQ, ...) will be added in later stages,
+# at which point the URLs below should point at their Compose service names
+# (e.g. http://request-service:8080).
+services:
+  api-gateway:
+    build: .
+    image: api-gateway:local
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      IDENTITY_SERVICE_URL: ${DOCKER_IDENTITY_SERVICE_URL:-http://host.docker.internal:4001}
+      SERVICE_CATALOG_URL: ${DOCKER_SERVICE_CATALOG_URL:-http://host.docker.internal:4002}
+      REQUEST_SERVICE_URL: ${DOCKER_REQUEST_SERVICE_URL:-http://host.docker.internal:4003}
+      RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-100}
+      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-60000}
+      UPSTREAM_CONNECT_TIMEOUT_MS: ${UPSTREAM_CONNECT_TIMEOUT_MS:-2000}
+      UPSTREAM_TIMEOUT_MS: ${UPSTREAM_TIMEOUT_MS:-10000}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
